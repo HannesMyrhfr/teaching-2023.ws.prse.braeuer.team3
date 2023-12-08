@@ -14,12 +14,6 @@
   <url>http://maven.apache.org</url>
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
       <version>1.5.3</version>
@@ -74,4 +68,24 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!-- SonarQube Plugin -->
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.9.0.2155</version>
+      </plugin>
+      <!-- Andere Plugins, falls vorhanden -->
+    </plugins>
+  </build>
+
+  <properties>
+    <!-- SonarQube Server URL -->
+    <sonar.host.url>http://your-sonar-server:9000</sonar.host.url>
+    <sonar.login>IhrSonarBenutzername</sonar.login>
+    <sonar.password>IhrSonarPasswort</sonar.password>
+  </properties>
+
 </project>

@@ -808,7 +808,4 @@ public class FahrtenbuchUI extends Application {
             stage.show();
         }
     }
-
-
-
 }
