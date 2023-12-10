@@ -16,8 +16,7 @@
   <name>test-build</name>
   	
   <modules>
-    		
-    <module>at.jku.se.prse.example.calculator</module>
+
     	  
     <module>Fahrtenbuch</module>
       
@@ -37,9 +36,9 @@
           		        
           <configuration>
             		          
-            <source>15</source>
+            <source>11</source>
             		          
-            <target>15</target>
+            <target>11</target>
             		          
 
             		        

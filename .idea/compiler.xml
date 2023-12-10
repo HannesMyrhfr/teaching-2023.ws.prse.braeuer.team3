@@ -7,11 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Fahrtenbuch" />
-        <module name="at.jku.se.prse.example.calculator" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="at.jku.se.prse.example.calculator" target="15" />
       <module name="drivers-log" target="1.5" />
+      <module name="test" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>

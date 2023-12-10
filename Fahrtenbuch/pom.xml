@@ -64,7 +64,7 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>RELEASE</version>
+      <version>7.8.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -77,8 +77,50 @@
         <artifactId>sonar-maven-plugin</artifactId>
         <version>3.9.0.2155</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version> <!-- Verwenden Sie eine passende Version -->
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>at.jku.se.prse.team3.App</mainClass> <!-- Ersetzen Sie dies mit Ihrer Hauptklasse -->
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>at.jku.se.prse.team3.App</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+
       <!-- Andere Plugins, falls vorhanden -->
     </plugins>
+
+
+
+
   </build>
 
   <properties>
@@ -86,6 +128,9 @@
     <sonar.host.url>http://your-sonar-server:9000</sonar.host.url>
     <sonar.login>IhrSonarBenutzername</sonar.login>
     <sonar.password>IhrSonarPasswort</sonar.password>
+
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
   </properties>
 
 </project>

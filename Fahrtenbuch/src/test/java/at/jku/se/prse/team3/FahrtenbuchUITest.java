@@ -173,5 +173,6 @@ public class FahrtenbuchUITest extends ApplicationTest {
         assertNotNull(lookup(".table-view").queryAs(TableView.class));
     }
 
+
 }
 
