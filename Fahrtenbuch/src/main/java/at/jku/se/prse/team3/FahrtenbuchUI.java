@@ -2,6 +2,7 @@ package at.jku.se.prse.team3;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
+import com.dropbox.core.v2.files.UploadErrorException;
 import javafx.animation.FadeTransition;
 
 import javafx.application.Application;
@@ -14,6 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 
 
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -23,6 +25,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -31,6 +34,7 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Box;
 import javafx.stage.*;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 import javafx.util.converter.*;
 import org.controlsfx.control.CheckComboBox;
 
@@ -131,12 +135,6 @@ public class FahrtenbuchUI extends Application {
         fadeTransition.setToValue(1);
         fadeTransition.play();
 
-
-
-
-
-        //primaryStage.show();
-        //basically useless Task can be removed if wished for controls the progress of loading bar
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -382,7 +380,6 @@ public class FahrtenbuchUI extends Application {
         abfahrtsZeit.setMaxWidth(200);
         abfahrtsZeit.setTextFormatter(new TextFormatter<>(new TimeStringConverter("HH:mm")));
 
-
         TextField ankunftsZeit = new TextField();
         ankunftsZeit.setPromptText("Ankunftszeit im Format HH:MM");
         ankunftsZeit.setMaxWidth(200);
@@ -417,21 +414,19 @@ public class FahrtenbuchUI extends Application {
         angezeigteKategorien.setVisible(false); // Anfangs nicht sichtbar machen
         angezeigteKategorien.setPrefHeight(50); // Höhe der TextArea anpassen
 
-
 // Füge die Kategorien-Komponenten zur Benutzeroberfläche hinzu
         VBox kategorienBox = new VBox(10);
+        kategorienBox.setSpacing(4);
         kategorienBox.getChildren().addAll(kategorienInput, angezeigteKategorien);
 
         DatePicker future = new DatePicker();
         future.getEditor().setDisable(true);
         future.setPromptText("Zukünftige Fahrten");
 
-
         TextArea selectedDates = new TextArea();
         selectedDates.setDisable(true);
         selectedDates.setVisible(false);
         selectedDates.setPrefWidth(84);
-
 
         future.setOnAction(event -> {
             LocalDate date = future.getValue();
@@ -444,6 +439,7 @@ public class FahrtenbuchUI extends Application {
         selectedDates.setPrefHeight(20);
 
         HBox futureDatesBox = new HBox(10);
+        futureDatesBox.setSpacing(5);
         futureDatesBox.getChildren().addAll(future, selectedDates);
 
         futureDatesBox.setVisible(false);
@@ -480,10 +476,10 @@ public class FahrtenbuchUI extends Application {
         box.setVisible(true);
 
         VBox fahrtTextinputboxen = new VBox(1);
+        fahrtTextinputboxen.setSpacing(4);
         fahrtTextinputboxen.getChildren().addAll(box, kfzKennzeichen, datum, abfahrtsZeit, ankunftsZeit,
                 gefahreneKilometer, aktiveFahrzeit, fahrtstatus, futureDatesBox, kategorienBox
         );
-
 
         backButton = new Button();
         backButton.setText("<- Zurück");
@@ -494,10 +490,11 @@ public class FahrtenbuchUI extends Application {
         ScrollPane scrollPane = new ScrollPane(fahrtTextinputboxen);
         scrollPane.setFitToWidth(true); // Passt die Breite der ScrollPane an die Breite der VBox an
         scrollPane.setPrefHeight(400); // Setzen Sie eine bevorzugte Höhe
-
+        scrollPane.setPadding(new Insets(10,10,10,10));
         Label info = new Label("    Fahrtinformartionen unten eingeben");
         primaryStage.setTitle("Neue Fahrt");
         StackPane layoutNewTrip = new StackPane();
+        //layoutNewTrip.setPadding(new Insets(10,10,10,10));
         layoutNewTrip.getChildren().add(scrollPane);
         backButton = new Button("<- Zurück");
         backButton.setOnAction(event -> {
@@ -571,7 +568,6 @@ public class FahrtenbuchUI extends Application {
             fahrtenListe.clear();
             fahrtenListe.addAll(fahrtenbuch.listeFahrten());
         });
-
 
         StackPane.setAlignment(speichernButton, Pos.BOTTOM_RIGHT);
         StackPane.setAlignment(backButton, Pos.BOTTOM_LEFT);
@@ -763,12 +759,7 @@ public class FahrtenbuchUI extends Application {
      */
     private void switchToSettings(Stage primaryStage) {
         ObservableList<String> addedCategories = FXCollections.observableArrayList();
-        backButton = new Button();
-        backButton.setText("<- Zurück");
-        backButton.setOnAction(actionEvent -> {
-            overview(primaryStage);
-            primaryStage.hide();
-        });
+
         DirectoryChooser enterSavePath= new DirectoryChooser();
         enterSavePath.titleProperty().set("Path");
         enterSavePath.setInitialDirectory(new File(System.getProperty("user.home")));
@@ -792,7 +783,6 @@ public class FahrtenbuchUI extends Application {
             if (selectedFile != null) {
                 Path path= Path.of(selectedFile.getAbsolutePath());
 
-
             try {
                 fahrtenbuch.exportManual(path);
             } catch (IOException e) {
@@ -801,41 +791,80 @@ public class FahrtenbuchUI extends Application {
             }
         });
 
-
         TextField kategorienInput = new TextField();
         kategorienInput.setPromptText("Kategorien eingeben:");
         kategorienInput.setMaxWidth(200);
         kategorienListe.clear();
         kategorienListe.addAll(fahrtenbuch.getKategorien(true));
 
+        HBox angezeigteKategorien = new HBox();
+        angezeigteKategorien.setSpacing(10);
 
-        ListView angezeigteKategorien = new ListView();
-        angezeigteKategorien.setItems(kategorienListe);
-        angezeigteKategorien.setEditable(false);
+        ObservableList<String> kategorienObservableList = FXCollections.observableArrayList(fahrtenbuch.getKategorien(true));
+        ListView<String> angezeigteKategorienList = new ListView<>(kategorienObservableList);
+
         // Anfangs nicht sichtbar machen
-        angezeigteKategorien.setPrefHeight(50); // Höhe der TextArea anpassen
+        angezeigteKategorien.setPrefHeight(70); // Höhe der TextArea anpassen
+        angezeigteKategorienList.setEditable(true);
+        angezeigteKategorienList.setCellFactory(TextFieldListCell.forListView());
+        angezeigteKategorienList.setOnEditCommit(new EventHandler<ListView.EditEvent<String>>() {
+            @Override
+            public void handle(ListView.EditEvent<String> t) {
+                angezeigteKategorienList.getItems().set(t.getIndex(), t.getNewValue());
+
+                //updating table in case the category of any Fahrt has changed
+                fahrtenbuch.renameKategorie(t.getIndex(),t.getNewValue());
+                fahrtenListe.clear();
+                fahrtenListe = FXCollections.observableArrayList(fahrtenbuch.listeFahrten());
+                fahrtenTabelle.setItems(fahrtenListe);
+                fahrtenTabelle.refresh();
+
+                kategorienListe.clear();
+                kategorienListe = fahrtenbuch.getKategorien(true);
+                angezeigteKategorienList.setVisible(true); // TextArea sichtbar machen
+                angezeigteKategorienList.refresh();
+            }
+        });
+
+        Button deleteBtn = new Button("Delete");
+        deleteBtn.setOnAction(actionEvent -> {
+            String selectedKategorie = angezeigteKategorienList.getSelectionModel().getSelectedItem();
+            if(selectedKategorie != null && !selectedKategorie.isEmpty()) {
+                boolean deleted = fahrtenbuch.deleteKategorie(selectedKategorie);
+                if(deleted) {
+                    // Entferne die Kategorie aus der ObservableList
+                    kategorienObservableList.remove(selectedKategorie);
+                }
+            }
+        });
+        angezeigteKategorien.getChildren().addAll(angezeigteKategorienList,deleteBtn);
 
         Button kategorieHinzufuegenButton = new Button("Kategorie hinzufügen");
         kategorieHinzufuegenButton.setOnAction(event -> {
             String kategorie = kategorienInput.getText().trim();
             if (!kategorie.isEmpty()) {
-                addToKategories(kategorie, kategorienListe::add); // Füge die Kategorie zur Liste hinzu
-                addToKategories(kategorie, addedCategories::add);
-                angezeigteKategorien.setVisible(true); // TextArea sichtbar machen
-                angezeigteKategorien.refresh();// Kategorie zur TextArea hinzufügen
+                // Füge die neue Kategorie zur ObservableList hinzu
+                kategorienObservableList.add(kategorie);
                 kategorienInput.clear(); // Eingabefeld leeren
-
-                fahrtenbuch.addKategories(addedCategories);
-
+                fahrtenbuch.addKategories(FXCollections.observableArrayList(kategorie)); // Füge Kategorie zum Fahrtenbuch hinzu
             }
         });
+
         VBox kategorieInp = new VBox();
+        kategorieInp.setSpacing(4);
         kategorieInp.getChildren().addAll(kategorienInput, kategorieHinzufuegenButton);
 
         Label tokenLabel = new Label("Enter Dropbox Access Token:");
         TextField tokenTextField = new TextField();
         tokenTextField.setStyle("-fx-text-fill: grey;");
         Button uploadButton = new Button("Upload to Dropbox");
+
+        backButton = new Button();
+        backButton.setText("<- Zurück");
+        backButton.setOnAction(actionEvent -> {
+            overview(primaryStage);
+            primaryStage.hide();
+        });
 
         tokenLabel.setAlignment(Pos.CENTER_LEFT); // Align the label to the left
         GridPane.setConstraints(tokenLabel, 0, 0);
@@ -855,13 +884,24 @@ public class FahrtenbuchUI extends Application {
             String kategorienIn = path2.toString();
             String cloudPathFahrten = "/Apps/SEPR_Team_3/fahrten.csv";
             String cloudPathKategorien = "/Apps/SEPR_Team_3/kategorien.csv";
-            CloudBackup.uploadDB(fahrtenIn, cloudPathFahrten, accessToken);
-            CloudBackup.uploadDB(kategorienIn, cloudPathKategorien, accessToken);
+            try {
+                CloudBackup.uploadDB(fahrtenIn, cloudPathFahrten, accessToken);
+            } catch (CloudBackup.DropboxUploadException | CloudBackup.FileUploadException e) {
+                throw new CloudBackup.CloudBackupException("Error uploading Fahrten", e);
+            }
+
+            try {
+                CloudBackup.uploadDB(kategorienIn, cloudPathKategorien, accessToken);
+            } catch (CloudBackup.DropboxUploadException | CloudBackup.FileUploadException e) {
+                throw new CloudBackup.CloudBackupException("Error uploading Kategorien", e);
+            }
         });
 
         primaryStage.setTitle("Einstellungen");
         GridPane gridSettings = new GridPane();
-
+        gridSettings.setPadding(new Insets(10,10,10,10));
+        gridSettings.setHgap(10);
+        gridSettings.setVgap(10);
         gridSettings.getChildren().addAll(exportButton, backButton, pfad, angezeigteKategorien, kategorieInp,tokenLabel,tokenTextField,uploadButton);
 
         gridSettings.setAlignment(Pos.CENTER);
@@ -875,8 +915,6 @@ public class FahrtenbuchUI extends Application {
 
 
         gridSettings.requestFocus();
-
-
 
 
         Scene einstellungen = new Scene(gridSettings, 720, 400);

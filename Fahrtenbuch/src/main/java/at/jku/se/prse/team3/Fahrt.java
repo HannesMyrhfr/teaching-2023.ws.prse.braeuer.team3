@@ -143,6 +143,13 @@ public class Fahrt {
         return this.kategorien.contains(kategorie);
     }
 
+    public void renameKategorie(String oldKategorie, String newKategorie){
+        for(int i=0; i<kategorien.size()-1; i++){
+            if(kategorien.get(i).equals(oldKategorie)){
+                kategorien.set(i,newKategorie);
+            }
+        }
+    }
     // Ersetzen der Kategorienliste
     public void setKategorienList(List<String> neueKategorien) {
         this.kategorien.clear();
