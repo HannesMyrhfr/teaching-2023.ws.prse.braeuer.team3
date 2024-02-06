@@ -32,5 +32,8 @@ jobs:
           architecture: x64
 
       # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Start to test and build the artifact
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

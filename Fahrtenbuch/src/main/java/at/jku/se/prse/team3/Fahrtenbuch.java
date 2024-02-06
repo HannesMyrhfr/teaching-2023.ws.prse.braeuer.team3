@@ -1,4 +1,5 @@
 package at.jku.se.prse.team3;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -98,7 +99,7 @@ public class Fahrtenbuch {
     }
 
     /**
-     * Hilffunktion zum Hionzufügen einer Kategorie
+     * Hilffunktion zum Hinzufügen einer Kategorie
      *
      * @param kategorie
      */
@@ -115,7 +116,8 @@ public class Fahrtenbuch {
         }
 
         if(found){
-            System.out.println("Kann Kategorie "+ kategorie + " nicht löschen, da sie in einer Fahrt verwendet wird.");
+            if(LOGGER.isLoggable(Level.INFO))
+            LOGGER.info("Kann Kategorie "+ kategorie + " nicht löschen, da sie in einer Fahrt verwendet wird.");
             return false;
         }else{
             return this.kategorien.remove(kategorie);
@@ -316,33 +318,39 @@ public class Fahrtenbuch {
             LocalTime ankunftszeit;
             Double gefahreneKilometer;
             LocalTime aktiveFahrzeit;
-            List<String> kategorien;
+            List<String> kategorien= new ArrayList<>();
+            List<String> alleKategorien = new ArrayList<>();
+            Set<String> uniquifier;
             FahrtStatus fahrtstatus;
 
 
             try (CSVReader reader = new CSVReader(new FileReader(importFahrten.toFile()))) {
 
                 while ((data = reader.readNext()) != null) {
+                    if (data.length<8){
+                        LOGGER.warning("not Enough Data to Import");
+                    }else {
+
+                        kFZKennzeichen = data[0];
 
 
-                    kFZKennzeichen = data[0];
+                        datum = LocalDate.parse(data[1]);
 
 
-                    datum = LocalDate.parse(data[1]);
+                        abfahrtszeit = LocalTime.parse(data[2]);
 
 
-                    abfahrtszeit = LocalTime.parse(data[2]);
-
-
-                    ankunftszeit = LocalTime.parse(data[3]);
-                    gefahreneKilometer = Double.valueOf(data[4]);
-                    aktiveFahrzeit = LocalTime.parse(data[5]);
-                    if (FahrtStatus.ZUKUENFTIG.toString().equals(data[6])) fahrtstatus = FahrtStatus.ZUKUENFTIG;
-                    else if (FahrtStatus.ABSOLVIERT.toString().equals(data[6])) fahrtstatus = FahrtStatus.ABSOLVIERT;
-                    else fahrtstatus = FahrtStatus.AUF_FAHRT;
-                    kategorien = Arrays.asList(data[7]);
-                    neueFahrt(kFZKennzeichen, datum, abfahrtszeit, ankunftszeit, gefahreneKilometer, aktiveFahrzeit, fahrtstatus, kategorien);
-
+                        ankunftszeit = LocalTime.parse(data[3]);
+                        gefahreneKilometer = Double.valueOf(data[4]);
+                        aktiveFahrzeit = LocalTime.parse(data[5]);
+                        if (FahrtStatus.ZUKUENFTIG.toString().equals(data[6])) fahrtstatus = FahrtStatus.ZUKUENFTIG;
+                        else if (FahrtStatus.ABSOLVIERT.toString().equals(data[6]))
+                            fahrtstatus = FahrtStatus.ABSOLVIERT;
+                        else fahrtstatus = FahrtStatus.AUF_FAHRT;
+                        kategorien = Arrays.asList(data[7].split(", "));
+                        neueFahrt(kFZKennzeichen, datum, abfahrtszeit, ankunftszeit, gefahreneKilometer, aktiveFahrzeit, fahrtstatus, kategorien);
+                        alleKategorien.addAll(kategorien);
+                    }
                 }
 
             } catch (NullPointerException | FileNotFoundException nullPointerException) {
@@ -354,11 +362,19 @@ public class Fahrtenbuch {
 
             try (CSVReader reader2 = new CSVReader(new FileReader(importKategorien.toFile()))) {
                 List<String[]> allKat = reader2.readAll();
+
                 for (String[] d : allKat) {
                     for (String cat : d) {
                         this.kategorien.add(cat.trim());
                     }
                 }
+                if(alleKategorien!=null){
+
+                    this.kategorien.addAll(alleKategorien);
+
+                }
+                uniquifier=new HashSet<>(this.kategorien);
+                this.kategorien=uniquifier.stream().collect(Collectors.toList());
             } catch (CsvException | FileNotFoundException e) {
                 throw new InExportExc("An Error occured during Import",e);
             } catch (IOException e) {

@@ -33,6 +33,6 @@ class CloudBackupTest {
     void testUploadDB_WithInvalidAccessToken_ShouldThrowRuntimeException() {
 
         String invalidAccessToken = "invalid-access-token";
-        assertThrows(RuntimeException.class, () -> CloudBackup.uploadDB(TEST_LOCAL_PATH, TEST_CLOUD_PATH, invalidAccessToken));
+        assertThrows(CloudBackup.FileUploadException.class, () -> CloudBackup.uploadDB(TEST_LOCAL_PATH, TEST_CLOUD_PATH, invalidAccessToken));
     }
 }

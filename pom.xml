@@ -3,15 +3,18 @@
   	
   <modelVersion>4.0.0</modelVersion>
   	
-  <groupId>at.jku.se.prse.example</groupId>
+ <groupId>at.jku.se.prse.example</groupId>
   	
-  <artifactId>test</artifactId>
+ <artifactId>test</artifactId>
   	
   <version>1.0</version>
   	
   <packaging>pom</packaging>
   	
-	
+<properties>
+  <sonar.organization>jku-win-se</sonar.organization>
+  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+</properties>
 	
   <name>test-build</name>
   	

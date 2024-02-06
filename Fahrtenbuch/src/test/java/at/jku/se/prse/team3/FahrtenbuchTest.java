@@ -3,8 +3,12 @@ package at.jku.se.prse.team3;
 import com.opencsv.exceptions.CsvValidationException;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -56,4 +60,17 @@ public class FahrtenbuchTest {
         assertEquals("Anzahl der importierten Fahrten soll 1 sein", 1, fahrtenbuch.listeFahrten().size());
     }
 
+    @Test
+    public void exportManual() throws IOException {
+        fahrtenbuch.neueFahrt("AB-1234", LocalDate.now(), LocalTime.now(), LocalTime.now(), 100.0, LocalTime.now(), FahrtStatus.ABSOLVIERT, Arrays.asList("Geschäftlich"));
+
+        fahrtenbuch.exportManual(Path.of(System.getProperty("user.home")+ File.separator + "Documents"));
+    }
+
+
+
+    @Test
+    public void manualImport() {
+        fahrtenbuch.manualImport(Path.of(System.getProperty("user.home")+ File.separator + "Documents"+File.separator+"Fahrtenbuch 0.0.3"));
+    }
 }

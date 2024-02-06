@@ -51,3 +51,7 @@ jobs:
     - name: Automatisierung bei einer Verletzung stoppen 
       if: steps.pmd.outputs.violations != 0
       run: exit 1
+    
+    
+  
+   
